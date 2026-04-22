@@ -1,4 +1,4 @@
-# portfolio-kisik
+# resume-site
 
 Portfolio landing на Next.js + Payload CMS с RU/EN локалями, CMS-управлением секциями и адаптивом по макету `bi8Au`.
 
