@@ -11,7 +11,7 @@ type LocalePageProps = {
 };
 
 export async function generateMetadata({
-  params
+  params,
 }: LocalePageProps): Promise<Metadata> {
   const resolvedParams = await params;
 
@@ -20,14 +20,25 @@ export async function generateMetadata({
   }
 
   const content = await getHomePageData(resolvedParams.locale);
+  const seoTitle = content.defaultSEO?.title || content.siteName;
+  const seoDescription = content.defaultSEO?.description || "";
+  const ogImage = content.defaultSEO?.ogImage?.url;
 
   return {
-    title: `${content.siteName} — ${content.hero.title}`,
-    description: content.hero.description,
+    title: seoTitle,
+    description: seoDescription,
     openGraph: {
-      title: `${content.siteName} — ${content.hero.title}`,
-      description: content.hero.description
-    }
+      title: seoTitle,
+      description: seoDescription,
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              alt: content.defaultSEO?.ogImage?.alt || seoTitle
+            }
+          ]
+        : undefined
+    },
   };
 }
 
