@@ -9,7 +9,7 @@ type GenericObject = Record<string, unknown>;
 
 function normalizeLinks(
   items: GenericObject[] | null | undefined,
-  key: "link" | "method"
+  key: "link" | "method",
 ) {
   if (!items?.length) {
     return [];
@@ -30,7 +30,7 @@ function normalizeLinks(
         iconUrl:
           typeof iconRelation?.url === "string" ? iconRelation.url : undefined,
         iconAlt:
-          typeof iconRelation?.alt === "string" ? iconRelation.alt : undefined
+          typeof iconRelation?.alt === "string" ? iconRelation.alt : undefined,
       };
     })
     .filter((item) => item.label);
@@ -38,7 +38,7 @@ function normalizeLinks(
 
 function extractItems<T>(
   relationships: unknown[] | null | undefined,
-  mapper: (item: GenericObject) => T
+  mapper: (item: GenericObject) => T,
 ): T[] {
   if (!relationships?.length) {
     return [];
@@ -46,7 +46,7 @@ function extractItems<T>(
 
   return relationships
     .map((item) =>
-      item && typeof item === "object" ? mapper(item as GenericObject) : null
+      item && typeof item === "object" ? mapper(item as GenericObject) : null,
     )
     .filter(Boolean) as T[];
 }
@@ -66,27 +66,35 @@ async function fetchFromPayload(locale: Locale) {
         locale,
         fallbackLocale: "ru",
         depth: 2,
-        draft: isEnabled
+        draft: isEnabled,
       }),
       payload.findGlobal({
         slug: "homePage",
         locale,
         fallbackLocale: "ru",
         depth: 2,
-        draft: isEnabled
-      })
+        draft: isEnabled,
+      }),
     ]);
 
     return mapHomePageData(
       {
         siteName: siteSettings?.siteName,
+        defaultSEO: {
+          ...(siteSettings?.defaultSEO ?? {}),
+          ogImage:
+            siteSettings?.defaultSEO?.ogImage &&
+            typeof siteSettings.defaultSEO.ogImage === "object"
+              ? siteSettings.defaultSEO.ogImage
+              : undefined,
+        },
         headerContacts:
           siteSettings?.contactItems
             ?.map((item: GenericObject) => item.value)
             .filter(Boolean) ?? [],
         socialLinks: normalizeLinks(siteSettings?.socialLinks, "link"),
         hero: {
-          ...homePage?.hero
+          ...homePage?.hero,
         },
         about: {
           ...homePage?.about,
@@ -94,7 +102,7 @@ async function fetchFromPayload(locale: Locale) {
             homePage?.about?.principles
               ?.map((item: GenericObject) => item.text)
               .filter(Boolean) ?? [],
-          stats: homePage?.about?.stats ?? []
+          stats: homePage?.about?.stats ?? [],
         },
         skills: {
           ...homePage?.skills,
@@ -103,10 +111,11 @@ async function fetchFromPayload(locale: Locale) {
             level: String(item.level ?? ""),
             description: String(item.description ?? ""),
             imageUrl: String(
-              ((item.attachmentImage as GenericObject | undefined)
-                ?.url as string | undefined) ?? ""
-            )
-          }))
+              ((item.attachmentImage as GenericObject | undefined)?.url as
+                | string
+                | undefined) ?? "",
+            ),
+          })),
         },
         experience: {
           ...homePage?.experience,
@@ -114,49 +123,49 @@ async function fetchFromPayload(locale: Locale) {
             period: String(item.period ?? ""),
             title: String(item.title ?? ""),
             description: String(item.description ?? ""),
-            highlight: String(item.highlight ?? "")
-          }))
+            highlight: String(item.highlight ?? ""),
+          })),
         },
         projects: {
           ...homePage?.projects,
           items: extractItems(homePage?.projects?.items, (item) => ({
             title: String(item.title ?? ""),
             description: String(item.description ?? ""),
-            result: String(item.result ?? "")
-          }))
+            result: String(item.result ?? ""),
+          })),
         },
         testimonials: {
           ...homePage?.testimonials,
           items: extractItems(homePage?.testimonials?.items, (item) => ({
             quote: String(item.quote ?? ""),
-            author: String(item.author ?? "")
-          }))
+            author: String(item.author ?? ""),
+          })),
         },
         preferences: {
           ...homePage?.preferences,
           items:
             homePage?.preferences?.items
               ?.map((item: GenericObject) => item.text)
-              .filter(Boolean) ?? []
+              .filter(Boolean) ?? [],
         },
         faq: {
           ...homePage?.faq,
           items:
             homePage?.faq?.items?.map((item: GenericObject) => ({
               question: String(item.question ?? ""),
-              answer: String(item.answer ?? "")
-            })) ?? []
+              answer: String(item.answer ?? ""),
+            })) ?? [],
         },
         contact: {
           ...homePage?.contact,
-          methods: normalizeLinks(homePage?.contact?.methods, "method")
+          methods: normalizeLinks(homePage?.contact?.methods, "method"),
         },
         footer: {
           ...homePage?.footer,
-          links: normalizeLinks(homePage?.footer?.links, "link")
-        }
+          links: normalizeLinks(homePage?.footer?.links, "link"),
+        },
       },
-      locale
+      locale,
     );
   } catch (error) {
     console.warn("Falling back to static homepage content:", error);
@@ -168,6 +177,6 @@ export const getHomePageData = unstable_cache(
   async (locale: Locale) => fetchFromPayload(locale),
   ["home-page-cache"],
   {
-    tags: ["home-page", "site-settings", "portfolio-sections"]
-  }
+    tags: ["home-page", "site-settings", "portfolio-sections"],
+  },
 );
